@@ -7,6 +7,15 @@ name = "pypi"
 flask = "*"
 flake8 = "*"
 black = "*"
+isort = "*"
+flask-restful = "*"
+pre-commit = "*"
+flask-sqlalchemy = "*"
+python-dotenv = "*"
+sqlalchemy = "*"
+psycopg2 = "*"
+flask-script = "*"
+flask-migrate = "*"
 
 [dev-packages]
 
