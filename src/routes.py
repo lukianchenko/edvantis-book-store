@@ -6,6 +6,7 @@ from flask_restful import Api, Resource
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.config import BEARER_KEY
+from src.middleware import token_required
 from src.models import (AuthorModel, BookModel, CategoryModel, OrderModel,
                         TagModel, UserModel, db)
 from src.utils import (add_bulk_data_to_instance, add_data_to_instance,
@@ -30,20 +31,20 @@ class AddBook(Resource):
         authors = request_data.get("authors")
         if authors is None:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Add author to the book",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Add author to the book",
+                   }, 400
         else:
             add_bulk_data_to_instance(book.authors, authors, AuthorModel)
 
         categories = request_data.get("categories")
         if categories is None:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Add category to the book",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Add category to the book",
+                   }, 400
         else:
             add_data_to_instance(book.categories, categories, CategoryModel)
 
@@ -77,6 +78,7 @@ class Book(Resource):
 
         return jsonify(book.get_full_info())
 
+    @token_required
     def delete(self, pk):
         book = BookModel.query.filter_by(id=pk).first()
         if not book:
@@ -87,10 +89,10 @@ class Book(Resource):
         db.session.commit()
 
         return {
-            "code": 200,
-            "success": True,
-            "message": f"Book {book_name} was deleted",
-        }, 200
+                   "code": 200,
+                   "success": True,
+                   "message": f"Book {book_name} was deleted",
+               }, 200
 
 
 class AddAuthor(Resource):
@@ -134,10 +136,10 @@ class SearchByAuthor(Resource):
             authors = AuthorModel.query.filter(filter_data).all()
         else:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Something wrong with request",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Something wrong with request",
+                   }, 400
 
         if len(authors) == 0:
             return {"code": 404, "success": False, "message": "Authors not found"}, 404
@@ -161,17 +163,17 @@ class SearchByCategory(Resource):
             categories = CategoryModel.query.filter(CategoryModel.name.like(f"%{param_value}%")).all()
         else:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Something wrong with request",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Something wrong with request",
+                   }, 400
 
         if len(categories) == 0:
             return {
-                "code": 404,
-                "success": False,
-                "message": "Categories not found",
-            }, 404
+                       "code": 404,
+                       "success": False,
+                       "message": "Categories not found",
+                   }, 404
         else:
             result = []
             for category in categories:
@@ -192,10 +194,10 @@ class SearchByTag(Resource):
             tags = TagModel.query.filter(TagModel.name.like(f"%{param_value}%")).all()
         else:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Something wrong with request",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Something wrong with request",
+                   }, 400
 
         if len(tags) == 0:
             return {"code": 404, "success": False, "message": "Tags not found"}, 404
@@ -261,22 +263,23 @@ class User(Resource):
         db.session.commit()
 
         return {
-            "code": 200,
-            "success": True,
-            "message": f"User {username} was deleted",
-        }, 200
+                   "code": 200,
+                   "success": True,
+                   "message": f"User {username} was deleted",
+               }, 200
 
 
 class UserLogin(Resource):
     def get(self):
 
-        auth = request.authorization
-        if not auth or not auth.username or not auth.password:
+        username = request.args.get("username")
+        password = request.args.get("password")
+        if not username or not password:
             return {"code": 401, "success": False, "message": "Could not verify"}, 401
 
-        user = UserModel.query.filter_by(username=auth.username).first()
+        user = UserModel.query.filter_by(username=username).first()
         if user:
-            if check_password_hash(user.password, auth.password):
+            if check_password_hash(user.password, password):
                 token = jwt.encode(
                     {"id": user.id, "exp": datetime.utcnow() + timedelta(minutes=30)},
                     BEARER_KEY,
@@ -301,10 +304,10 @@ class AddOrder(Resource):
         books = request_data.get("books")
         if books is None:
             return {
-                "code": 400,
-                "success": False,
-                "message": "Add books to the order",
-            }, 400
+                       "code": 400,
+                       "success": False,
+                       "message": "Add books to the order",
+                   }, 400
         else:
             add_bulk_data_to_instance(order.books, books, BookModel)
 
@@ -347,10 +350,10 @@ class Order(Resource):
         db.session.commit()
 
         return {
-            "code": 200,
-            "success": True,
-            "message": f"Order {order_number} was deleted",
-        }, 200
+                   "code": 200,
+                   "success": True,
+                   "message": f"Order {order_number} was deleted",
+               }, 200
 
 
 rest_api.add_resource(AddBook, "/book/")

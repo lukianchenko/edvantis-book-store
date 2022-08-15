@@ -333,6 +333,13 @@
             "description": "ID of book to delete",
             "required": true,
             "type": "integer"
+          },
+          {
+            "name": "x-api-key",
+            "in": "header",
+            "description": "api key",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -341,7 +348,13 @@
           },
           "404": {
             "description": "Book not found"
-          }
+          },
+          "security": [
+            {
+              "token_auth": [
+              ]
+            }
+          ]
         }
       }
     },
@@ -465,6 +478,40 @@
         "responses": {
           "200": {
             "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Login user",
+        "description": "",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "description": "Username",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "Password",
+            "required": true,
+            "type": "string",
+            "format": "password"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "string"
+            }
           }
         }
       }
@@ -675,6 +722,13 @@
           }
         }
       }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "x-api-key",
+      "in": "header"
     }
   }
 }
