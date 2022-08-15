@@ -28,6 +28,6 @@ def token_required(f):
                     "success": False,
                     "message": "Token is invalid"}, 401
 
-            return f(current_user, *args, **kwargs)
+        return f(current_user, *args, **kwargs)
 
     return decorator
