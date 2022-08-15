@@ -8,3 +8,5 @@ POSTGRES = {
     "db": os.getenv("APPLICATION_POSTGRES_DB", "postgres"),
 }
 DB_URI = "postgresql://%(user)s:%(pw)s@%(host)s:%(port)s/%(db)s" % POSTGRES
+
+BEARER_KEY = os.getenv("BEARER_KEY", "")
