@@ -4,8 +4,8 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
+        exclude: ^migrations/
       - id: trailing-whitespace
-      - id: requirements-txt-fixer
         exclude: ^migrations/
 
   - repo: https://github.com/PyCQA/flake8
@@ -15,15 +15,15 @@ repos:
         args: [--config, .flake8]
         exclude: ^migrations/
 
-#  - repo: https://github.com/psf/black
-#    rev: 22.6.0
-#    hooks:
-#      - id: black
-#        args: [--config, .black.toml]
-#        exclude: ^migrations/
-#
-#  - repo: https://github.com/PyCQA/isort
-#    rev: 5.5.2
-#    hooks:
-#      - id: isort
-#        exclude: ^migrations/
+  - repo: https://github.com/psf/black
+    rev: 22.6.0
+    hooks:
+      - id: black
+        args: [--config, black]
+        exclude: ^migrations/
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.5.2
+    hooks:
+      - id: isort
+        exclude: ^migrations/
