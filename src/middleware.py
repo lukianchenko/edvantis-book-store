@@ -2,8 +2,10 @@ from functools import wraps
 
 import jwt
 from flask import request
+from jwt import InvalidSignatureError, ExpiredSignatureError
 
-from models import UserModel
+from src.models import UserModel
+from src.config import BEARER_KEY
 
 
 def token_required(f):
@@ -12,8 +14,8 @@ def token_required(f):
 
         token = None
 
-        if 'x-api-key' in request.headers:
-            token = request.headers['x-api-key']
+        if 'X-API-KEY' in request.headers:
+            token = request.headers['X-API-KEY']
 
         if not token:
             return {"code": 401,
@@ -21,13 +23,23 @@ def token_required(f):
                     "message": "A valid token is missing"}, 401
 
         try:
-            data = jwt.decode(jwt, key=token, algorithms=["HS256", ])
+            data = jwt.decode(token, BEARER_KEY, algorithms=["HS256"])
             current_user = UserModel.query.filter_by(id=data['id']).first()
-        except ValueError:
+            if current_user:
+                return f(*args, **kwargs)
+            else:
+                return {"code": 401,
+                        "success": False,
+                        "message": "Token missing or invalid"}, 401
+
+        except InvalidSignatureError:
             return {"code": 401,
                     "success": False,
-                    "message": "Token is invalid"}, 401
+                    "message": "Token invalid"}, 401
 
-        return f(current_user, *args, **kwargs)
+        except ExpiredSignatureError:
+            return {"code": 401,
+                    "success": False,
+                    "message": "Token expired"}, 401
 
     return decorator
