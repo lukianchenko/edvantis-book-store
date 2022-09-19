@@ -16,6 +16,8 @@ rest_api = Api()
 
 
 class AddBook(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
 
@@ -59,6 +61,7 @@ class AddBook(Resource):
 
 
 class Book(Resource):
+
     def get(self, pk):
         book = BookModel.query.filter_by(id=pk).first()
         if book is None:
@@ -66,6 +69,7 @@ class Book(Resource):
 
         return jsonify(book.get_full_info())
 
+    @token_required
     def put(self, pk):
         book = BookModel.query.filter_by(id=pk).first()
         if not book:
@@ -96,6 +100,8 @@ class Book(Resource):
 
 
 class AddAuthor(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
         author = AuthorModel(**request_data)
@@ -106,6 +112,8 @@ class AddAuthor(Resource):
 
 
 class AddCategory(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
         category = CategoryModel(**request_data)
@@ -116,6 +124,8 @@ class AddCategory(Resource):
 
 
 class AddTag(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
         tag = TagModel(**request_data)
@@ -214,6 +224,8 @@ class SearchByTag(Resource):
 
 
 class AddUser(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
         user = UserModel()
@@ -240,6 +252,7 @@ class User(Resource):
 
         return jsonify(serialize(user))
 
+    @token_required
     def put(self, username):
         user = UserModel.query.filter_by(username=username).first()
         if not user:
@@ -254,6 +267,7 @@ class User(Resource):
 
         return jsonify(serialize(user))
 
+    @token_required
     def delete(self, username):
         user = UserModel.query.filter_by(username=username).first()
         if not user:
@@ -262,36 +276,32 @@ class User(Resource):
         db.session.delete(user)
         db.session.commit()
 
-        return {
-                   "code": 200,
-                   "success": True,
-                   "message": f"User {username} was deleted",
-               }, 200
+        return {"code": 200, "success": True, "message": f"User {username} was deleted"}, 200
 
 
 class UserLogin(Resource):
     def get(self):
 
-        username = request.args.get("username")
-        password = request.args.get("password")
-        if not username or not password:
-            return {"code": 401, "success": False, "message": "Could not verify"}, 401
+        auth = request.authorization
+        if auth and auth.username != "" and auth.password != "":
 
-        user = UserModel.query.filter_by(username=username).first()
-        if user:
-            if check_password_hash(user.password, password):
-                token = jwt.encode(
-                    {"id": user.id, "exp": datetime.utcnow() + timedelta(minutes=30)},
-                    BEARER_KEY,
-                )
-                return jsonify({"token": token})
-        else:
-            return {"code": 404, "success": False, "message": "User no found"}, 404
+            user = UserModel.query.filter_by(username=auth.username).first()
+            if user:
+                if check_password_hash(user.password, auth.password):
+                    token = jwt.encode({"id": user.id, "exp": datetime.utcnow() + timedelta(minutes=30)},
+                                       BEARER_KEY)
+                    return jsonify({"token": token})
+                else:
+                    return {"code": 401, "success": False, "message": "Wrong password"}, 401
+            else:
+                return {"code": 404, "success": False, "message": "User no found"}, 404
 
-        return {"code": 401, "success": False, "message": "Wrong password"}, 401
+        return {"code": 401, "success": False, "message": "Authorization required"}, 401
 
 
 class AddOrder(Resource):
+
+    @token_required
     def post(self):
         request_data = request.get_json()
         order = OrderModel()
@@ -321,6 +331,8 @@ class AddOrder(Resource):
 
 
 class Order(Resource):
+
+    @token_required
     def get(self, order_number):
         order = OrderModel.query.filter_by(order_number=order_number).first()
         if order is None:
@@ -328,6 +340,7 @@ class Order(Resource):
 
         return jsonify(serialize(order))
 
+    @token_required
     def put(self, order_number):
         order = OrderModel.query.filter_by(order_number=order_number).first()
         if not order:
@@ -340,6 +353,7 @@ class Order(Resource):
 
         return jsonify(serialize(order))
 
+    @token_required
     def delete(self, order_number):
         order = OrderModel.query.filter_by(order_number=order_number).first()
         if not order:
@@ -362,8 +376,8 @@ rest_api.add_resource(SearchByAuthor, "/books/findByAuthor")
 rest_api.add_resource(SearchByCategory, "/books/findByCategory")
 rest_api.add_resource(SearchByTag, "/books/findByTag")
 rest_api.add_resource(AddAuthor, "/author/")
-rest_api.add_resource(AddCategory, "/categories/")
-rest_api.add_resource(AddTag, "/tags/")
+rest_api.add_resource(AddCategory, "/category/")
+rest_api.add_resource(AddTag, "/tag/")
 rest_api.add_resource(AddUser, "/user/")
 rest_api.add_resource(UserLogin, "/user/login")
 rest_api.add_resource(User, "/user/<username>")

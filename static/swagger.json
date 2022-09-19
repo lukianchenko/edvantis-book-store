@@ -15,6 +15,18 @@
       "description": "Everything about books"
     },
     {
+      "name": "Author",
+      "description": "Operations about authors"
+    },
+    {
+      "name": "Category",
+      "description": "Operations about categories"
+    },
+    {
+      "name": "Tag",
+      "description": "Operations about tags"
+    },
+    {
       "name": "Order",
       "description": "Access to orders"
     },
@@ -45,13 +57,6 @@
         }
       },
       "Book": {
-        "required": [
-          "name",
-          "authors",
-          "publish_date",
-          "publisher",
-          "categories"
-        ],
         "type": "object",
         "properties": {
           "id": {
@@ -82,11 +87,15 @@
           },
           "categories": {
             "type": "array",
-            "$ref": "#/components/schemas/Category"
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
           },
           "tags": {
             "type": "array",
-            "$ref": "#/components/schemas/Tag"
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
           },
           "price": {
             "type": "number",
@@ -226,6 +235,13 @@
           "name": "Order"
         }
       }
+    },
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
     }
   },
   "paths": {
@@ -247,6 +263,11 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "400": {
             "description": "Add author or category to the book"
@@ -267,14 +288,20 @@
             "in": "path",
             "description": "ID of book to return",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Book"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
             }
           },
           "404": {
@@ -294,7 +321,9 @@
             "in": "path",
             "description": "ID of book to update",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
@@ -308,11 +337,20 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Book"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Book"
+                }
+              }
             }
           },
           "404": {
@@ -332,14 +370,18 @@
             "in": "path",
             "description": "ID of book to delete",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
           },
           {
             "name": "x-api-key",
             "in": "header",
             "description": "api key",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -348,14 +390,13 @@
           },
           "404": {
             "description": "Book not found"
-          },
-          "security": [
-            {
-              "token_auth": [
-              ]
-            }
-          ]
-        }
+          }
+        },
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
       }
     },
     "/books/findByAuthor": {
@@ -371,16 +412,24 @@
             "in": "query",
             "description": "Author of books to return",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Book"
-            },
-            "type": "array"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Book"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Something wrong with request"
@@ -404,16 +453,24 @@
             "in": "query",
             "description": "Category of books to return",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Book"
-            },
-            "type": "array"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Book"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Something wrong with request"
@@ -437,16 +494,24 @@
             "in": "query",
             "description": "Tag of books to return",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Book"
-            },
-            "type": "array"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Book"
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "Something wrong with request"
@@ -457,6 +522,98 @@
         }
       }
     },
+
+    "/author": {
+      "post": {
+        "tags": [
+          "Author"
+        ],
+        "summary": "Add a new author",
+        "description": "",
+        "requestBody": {
+          "description": "Add author to database",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Author"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/category": {
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Add a new category",
+        "description": "",
+        "requestBody": {
+          "description": "Add author to database",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Category"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+    "/tag": {
+      "post": {
+        "tags": [
+          "Tag"
+        ],
+        "summary": "Add a new tag",
+        "description": "",
+        "requestBody": {
+          "description": "Add tag to database",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Tag"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          }
+        }
+      }
+    },
+
     "/user": {
       "post": {
         "tags": [
@@ -475,6 +632,11 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation"
@@ -495,23 +657,27 @@
             "in": "query",
             "description": "Username",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "password",
             "in": "query",
             "description": "Password",
             "required": true,
-            "type": "string",
-            "format": "password"
+            "schema": {
+              "type": "string",
+              "format": "password"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful operation",
-            "schema": {
-              "type": "string"
-            }
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authorization required"
           }
         }
       }
@@ -529,14 +695,20 @@
             "in": "path",
             "description": "username of user to return",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/User"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
             }
           },
           "404": {
@@ -556,7 +728,9 @@
             "in": "path",
             "description": "username of user to update",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
@@ -570,11 +744,20 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/User"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
             }
           },
           "404": {
@@ -594,7 +777,14 @@
             "in": "path",
             "description": "username of user to delete",
             "required": true,
-            "type": "integer"
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
           }
         ],
         "responses": {
@@ -607,6 +797,7 @@
         }
       }
     },
+
     "/order": {
       "post": {
         "tags": [
@@ -625,9 +816,17 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation"
+          },
+          "400": {
+            "description": "Add books to the order"
           }
         }
       }
@@ -645,14 +844,25 @@
             "in": "path",
             "description": "order number to return",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
           }
         ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/User"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
             }
           },
           "404": {
@@ -672,7 +882,9 @@
             "in": "path",
             "description": "order number to update",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "requestBody": {
@@ -686,11 +898,20 @@
             }
           }
         },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful operation",
-            "schema": {
-              "$ref": "#/components/schemas/Order"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
             }
           },
           "404": {
@@ -710,7 +931,14 @@
             "in": "path",
             "description": "Order number to delete",
             "required": true,
-            "type": "string"
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
           }
         ],
         "responses": {
@@ -722,13 +950,6 @@
           }
         }
       }
-    }
-  },
-  "securityDefinitions": {
-    "api_key": {
-      "type": "apiKey",
-      "name": "x-api-key",
-      "in": "header"
     }
   }
 }

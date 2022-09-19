@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_migrate import Migrate
 from flask_swagger_ui import get_swaggerui_blueprint
 
@@ -31,6 +31,12 @@ migrate = Migrate(app, db)
 API initialization
 """
 rest_api.init_app(app)
+
+
+@app.route("/")
+def index_page():
+    return render_template('index.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
