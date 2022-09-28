@@ -5,18 +5,28 @@ from flask import jsonify, request
 from flask_restful import Api, Resource
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from src.config import BEARER_KEY
+from src.config import API_KEY
 from src.middleware import token_required
-from src.models import (AuthorModel, BookModel, CategoryModel, OrderModel,
-                        TagModel, UserModel, db)
-from src.utils import (add_bulk_data_to_instance, add_data_to_instance,
-                       serialize, serialize_date)
+from src.models import (
+    AuthorModel,
+    BookModel,
+    CategoryModel,
+    OrderModel,
+    TagModel,
+    UserModel,
+    db,
+)
+from src.utils import (
+    add_bulk_data_to_instance,
+    add_data_to_instance,
+    serialize,
+    serialize_date,
+)
 
 rest_api = Api()
 
 
 class AddBook(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -33,20 +43,20 @@ class AddBook(Resource):
         authors = request_data.get("authors")
         if authors is None:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Add author to the book",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Add author to the book",
+            }, 400
         else:
             add_bulk_data_to_instance(book.authors, authors, AuthorModel)
 
         categories = request_data.get("categories")
         if categories is None:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Add category to the book",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Add category to the book",
+            }, 400
         else:
             add_data_to_instance(book.categories, categories, CategoryModel)
 
@@ -61,7 +71,6 @@ class AddBook(Resource):
 
 
 class Book(Resource):
-
     def get(self, pk):
         book = BookModel.query.filter_by(id=pk).first()
         if book is None:
@@ -93,14 +102,13 @@ class Book(Resource):
         db.session.commit()
 
         return {
-                   "code": 200,
-                   "success": True,
-                   "message": f"Book {book_name} was deleted",
-               }, 200
+            "code": 200,
+            "success": True,
+            "message": f"Book {book_name} was deleted",
+        }, 200
 
 
 class AddAuthor(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -112,7 +120,6 @@ class AddAuthor(Resource):
 
 
 class AddCategory(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -124,7 +131,6 @@ class AddCategory(Resource):
 
 
 class AddTag(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -146,10 +152,10 @@ class SearchByAuthor(Resource):
             authors = AuthorModel.query.filter(filter_data).all()
         else:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Something wrong with request",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Something wrong with request",
+            }, 400
 
         if len(authors) == 0:
             return {"code": 404, "success": False, "message": "Authors not found"}, 404
@@ -173,17 +179,17 @@ class SearchByCategory(Resource):
             categories = CategoryModel.query.filter(CategoryModel.name.like(f"%{param_value}%")).all()
         else:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Something wrong with request",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Something wrong with request",
+            }, 400
 
         if len(categories) == 0:
             return {
-                       "code": 404,
-                       "success": False,
-                       "message": "Categories not found",
-                   }, 404
+                "code": 404,
+                "success": False,
+                "message": "Categories not found",
+            }, 404
         else:
             result = []
             for category in categories:
@@ -204,10 +210,10 @@ class SearchByTag(Resource):
             tags = TagModel.query.filter(TagModel.name.like(f"%{param_value}%")).all()
         else:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Something wrong with request",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Something wrong with request",
+            }, 400
 
         if len(tags) == 0:
             return {"code": 404, "success": False, "message": "Tags not found"}, 404
@@ -224,7 +230,6 @@ class SearchByTag(Resource):
 
 
 class AddUser(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -288,8 +293,7 @@ class UserLogin(Resource):
             user = UserModel.query.filter_by(username=auth.username).first()
             if user:
                 if check_password_hash(user.password, auth.password):
-                    token = jwt.encode({"id": user.id, "exp": datetime.utcnow() + timedelta(minutes=30)},
-                                       BEARER_KEY)
+                    token = jwt.encode({"id": user.id, "exp": datetime.utcnow() + timedelta(minutes=30)}, API_KEY)
                     return jsonify({"token": token})
                 else:
                     return {"code": 401, "success": False, "message": "Wrong password"}, 401
@@ -300,7 +304,6 @@ class UserLogin(Resource):
 
 
 class AddOrder(Resource):
-
     @token_required
     def post(self):
         request_data = request.get_json()
@@ -314,10 +317,10 @@ class AddOrder(Resource):
         books = request_data.get("books")
         if books is None:
             return {
-                       "code": 400,
-                       "success": False,
-                       "message": "Add books to the order",
-                   }, 400
+                "code": 400,
+                "success": False,
+                "message": "Add books to the order",
+            }, 400
         else:
             add_bulk_data_to_instance(order.books, books, BookModel)
 
@@ -331,7 +334,6 @@ class AddOrder(Resource):
 
 
 class Order(Resource):
-
     @token_required
     def get(self, order_number):
         order = OrderModel.query.filter_by(order_number=order_number).first()
@@ -364,10 +366,10 @@ class Order(Resource):
         db.session.commit()
 
         return {
-                   "code": 200,
-                   "success": True,
-                   "message": f"Order {order_number} was deleted",
-               }, 200
+            "code": 200,
+            "success": True,
+            "message": f"Order {order_number} was deleted",
+        }, 200
 
 
 rest_api.add_resource(AddBook, "/book/")

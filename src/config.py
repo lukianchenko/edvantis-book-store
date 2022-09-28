@@ -9,4 +9,4 @@ POSTGRES = {
 }
 DB_URI = "postgresql://%(user)s:%(pw)s@%(host)s:%(port)s/%(db)s" % POSTGRES
 
-BEARER_KEY = os.getenv("BEARER_KEY", "")
+API_KEY = os.getenv("API_KEY", "")
